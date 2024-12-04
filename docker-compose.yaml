@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.33
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: edutrack
+    volumes:
+      - ./edutrack.sql:/docker-entrypoint-initdb.d/edutrack.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - my_network
+
+  student-service:
+    image: udanasanchitha/edutrack-student-service:v1.0.0
+    container_name: student-service
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: edutrack
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mysql
+    networks:
+      - my_network
+  
+  sheduling-service:
+    image: udanasanchitha/edutrack-shedule-service:v1.0.0
+    container_name: sheduling-service
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: edutrack
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mysql
+    networks:
+      - my_network
+  
+  notification-service:
+    image: udanasanchitha/edutrack-notification-service:v1.0.0
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: edutrack
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mysql
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
